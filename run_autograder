@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+cp /autograder/submission/multiAgents.py /autograder/source/multiAgents.py
+
+cd /autograder/source
+ 
+python3 autograder.py --gradescope-output true
+ 
+mkdir -p /autograder/results
+ 
+cp gradescope_response.json /autograder/results/results.json
+
+# Print the generated JSON file
+echo "Gradescope Response:"
+cat gradescope_response.json
