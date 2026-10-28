@@ -74,8 +74,50 @@ class ReflexAgent(Agent):
         newGhostStates = successorGameState.getGhostStates()
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
+        print("Food", newFood.asList())
+        print("New Position", newPos)
+        print("New Ghost States", newGhostStates)
+        print("New Scared Times", newScaredTimes)
+
         "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+        remaining_food = len(newFood.asList())
+        food_weight = -1
+        food_manhattan_distances = [manhattanDistance(new_food, newPos) for new_food in newFood.asList()]
+        closest_food = 0
+
+        if(newFood.asList()):
+            closest_food = min(food_manhattan_distances)
+            if(closest_food != 0):
+                closest_food = 1/ closest_food
+            else:
+                closest_food = 10
+
+        food_distance_weight = 1
+
+        ghost_distance_scared_times = [(manhattanDistance(ghost.getPosition(), newPos), ghost.scaredTimer) for ghost in newGhostStates]
+        ghost_distance_weight = -2
+
+        if ghost_distance_scared_times:
+            closest_ghost = min(ghost_distance_scared_times, key=lambda item: item[0])
+
+        if closest_ghost[0] != 0:
+            closest_ghost_distance = 1 / closest_ghost[0]
+            closest_ghost_scared_timer = closest_ghost[1]
+        else:
+            closest_ghost_distance = 50
+            closest_ghost_scared_timer = 0
+
+        if(closest_ghost[0] <= 2 and closest_ghost_scared_timer == 0):
+            ghost_distance_weight = ghost_distance_weight * 2
+
+        elif(closest_ghost[0] <= 2 and closest_ghost_scared_timer > 3):
+            ghost_distance_weight = -ghost_distance_weight
+
+        
+
+        value = successorGameState.getScore() + remaining_food * food_weight + closest_food * food_distance_weight + closest_ghost_distance * ghost_distance_weight
+        
+        return value
 
 def scoreEvaluationFunction(currentGameState: GameState):
     """
