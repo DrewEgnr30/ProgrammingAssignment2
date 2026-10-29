@@ -406,7 +406,63 @@ def betterEvaluationFunction(currentGameState: GameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    """Weights"""
+    remaining_food_weight = -1
+    closest_food_weight = 1
+    ghost_weight = -2
+    end_state_reward = 0
+
+    current_position = currentGameState.getPacmanPosition()
+    ghost_states = currentGameState.getGhostStates()
+    current_food_list = currentGameState.getFood().asList()
+    current_food_amount = len(current_food_list)
+    closest_food = 0
+
+    food_manhattan_distances = [manhattanDistance(current_position, food) for food in current_food_list]
+
+    if food_manhattan_distances:
+        closest_food = min(food_manhattan_distances)
+
+    if closest_food > 0:
+        closest_food = 1/closest_food
+    else:
+        closest_food = 10
+
+    ghost_manhattan_distance_timer_tuple = [{"distance": manhattanDistance(current_position, ghost.getPosition()) , "timer": ghost.scaredTimer} for ghost in ghost_states]
+
+    ghost_value = 0
+
+    for ghost in ghost_manhattan_distance_timer_tuple:
+
+        ghost_distance = ghost["distance"]
+        ghost_timer = ghost["timer"]
+
+        if ghost_distance == 0:
+            if ghost_timer > 0:
+                ghost_value = ghost_value + 5
+            else:
+                ghost_value = ghost_value - 5
+
+        elif ghost_distance > 0 and ghost_distance <= 2:
+            if ghost_timer == 0:
+                ghost_value = ghost_value + 1 / ghost_distance * 2 * ghost_weight
+            elif ghost_timer > 3:
+                ghost_value = ghost_value + 1 / ghost_distance * -ghost_weight
+
+        else:
+            ghost_value = ghost_value + 1 / ghost_distance * ghost_weight
+
+
+    if currentGameState.isWin():
+        end_state_reward = 100
+
+    if currentGameState.isLose():
+        end_state_reward = -100
+
+    value = end_state_reward + currentGameState.getScore() + current_food_amount * remaining_food_weight + closest_food * closest_food_weight + ghost_value
+
+
+    return value
 
 # Abbreviation
 better = betterEvaluationFunction
